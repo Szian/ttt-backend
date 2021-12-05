@@ -40,6 +40,8 @@ class AccountMapper {
     }
 }
 
+app.use(express.json());
+
 app.post('/account/signup', async (req, res, next) => {
     let username = req.query.username;
     let password = req.query.password;
@@ -67,7 +69,7 @@ app.post('/account/signup', async (req, res, next) => {
 
     const writeRes = await accountMapper.insertAccount(accountDO);
     if (writeRes.acknowledged) {
-        resBody.inserted = true;
+        resBody.success = true;
     }
     res.writeHead(200, {'Content-Type': 'json'});
     res.write(JSON.stringify(resBody));
@@ -155,6 +157,17 @@ app.post('/account/logout', async (req, res, next) => {
     resBody.success = true;
     res.writeHead(200, {'Content-Type': 'json'});
     res.write(JSON.stringify(resBody));
+    res.end();
+    return;
+});
+
+app.post('/board/next', async (req, res, next) => {
+    const level = req.body.level;
+    const opponent = req.body.player; // opponent from AI's perspective
+    let board = req.body.board;
+
+    res.writeHead(200, {'Content-Type': 'json'});
+    res.write(JSON.stringify(board));
     res.end();
     return;
 });
