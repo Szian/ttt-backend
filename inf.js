@@ -419,8 +419,8 @@ function winner(board) {
     };
 
     let blank = false;
-    for (let i = 0; i < 2; i ++) {
-        for (let j = 0; j < 2; j ++) {
+    for (let i = 0; i < 3; i ++) {
+        for (let j = 0; j < 3; j ++) {
             if (board[i][j] == '_') {
                 blank = true;
                 continue;
@@ -434,7 +434,7 @@ function winner(board) {
     }
 
     if (!blank) res.ended = true;
-    for (let t = 0; t <= 1; t ++) {
+    for (let t = 0; t < 2; t ++) {
         let winner = t == 0 ? 'x' : 'o';
         let won = false;
         for (let i = 0; i < 3; i ++) {
@@ -452,7 +452,7 @@ function winner(board) {
     return res;
 }
 
-function inference(board, player, opponent) {
+function solve(board, player, opponent) {
     let solver = new Solver('x', 'o');
     let res = {
         ended: false,
@@ -472,11 +472,14 @@ function inference(board, player, opponent) {
     return res;
 }
 
-let board = [['x', 'o', 'x'], 
-             ['x', 'o', 'o'], 
-             ['_', '_', '_']];
-let player = 'x', opponent = 'o';
-let res = inference(board, player, opponent);
-console.log(res);
+module.exports = solve;
+
+// let board = [['x', 'x', 'o'], 
+//              ['o', 'x', 'o'], 
+//              ['_', 'x', '_']];
+
+// let player = 'x', opponent = 'o';
+// let res = solve(board, player, opponent);
+// console.log(res);
 // This code is contributed by rag2127
  

@@ -7,6 +7,7 @@ const PORT = 3000;
 const uuid = require('uuid');
 const ObjectID = require('mongodb').ObjectID;
 const cors = require('cors');
+const solve = require('./inf');
 
 class AccountDO {
     constructor(username, password) {
@@ -169,8 +170,16 @@ app.post('/board/next', async (req, res, next) => {
     const opponent = req.body.player; // opponent from AI's perspective
     let board = req.body.board;
 
+    if (!level || !opponent || !board) {
+        res.writeHead(400);
+        res.end();
+        return;
+    }
+    const player = opponent == 'x' ? 'o' : 'x';
+    
+    let solveRes = solve(board, player, opponent);
     res.writeHead(200, {'Content-Type': 'json'});
-    res.write(JSON.stringify(board));
+    res.write(JSON.stringify(solveRes));
     res.end();
     return;
 });
