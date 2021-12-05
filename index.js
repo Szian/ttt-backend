@@ -6,6 +6,7 @@ const app = express();
 const PORT = 3000;
 const uuid = require('uuid');
 const ObjectID = require('mongodb').ObjectID;
+const cors = require('cors');
 
 class AccountDO {
     constructor(username, password) {
@@ -39,6 +40,8 @@ class AccountMapper {
         return result;
     }
 }
+
+app.use(cors());
 
 app.use(express.json());
 
