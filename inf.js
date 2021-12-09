@@ -21,16 +21,10 @@ class Solver {
     }
 
     isMovesLeft(board) {
-
         for (let i = 0; i < 3; i++)
-
             for (let j = 0; j < 3; j++)
-
                 if (board[i][j] == '_')
-
                     return true;
-
-
 
         return false;
     }
@@ -453,7 +447,7 @@ function winner(board) {
 }
 
 function solve(board, player, opponent) {
-    let solver = new Solver('x', 'o');
+    let solver = new Solver(player, opponent);
     let res = {
         ended: false,
         winner: "",
