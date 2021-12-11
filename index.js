@@ -328,7 +328,7 @@ app.get('/board/record', async (req, res, next) => {
     let matchDOs = await matchMapper.listMatches(username);
     for (let i = 0; i < matchDOs.length; i ++) {
         const matchVO = new MatchVO(matchDOs[i]);
-        matches.append(matchVO);
+        matches.push(matchVO);
     }
     resBody.success = true;
     resBody.matches = matches;
