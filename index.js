@@ -234,7 +234,7 @@ app.post('/board/next', async (req, res, next) => {
     }
     const player = opponent == 'x' ? 'o' : 'x';
     
-    let solveRes = solve(board, player, opponent);
+    let solveRes = solve(board, player, opponent, level);
     res.writeHead(200, {'Content-Type': 'json'});
     res.write(JSON.stringify(solveRes));
     res.end();

@@ -1,7 +1,13 @@
+const thrMap = {
+    "easy": 0.0,
+    "medium": 0.50,
+    "hard": 2.0
+}
+
 class Move{
-    constructor() {
-        this.row = -1;
-        this.col = -1;
+    constructor(i, j) {
+        this.row = i;
+        this.col = j;
     }
 }
  
@@ -113,15 +119,18 @@ class Solver {
         return 0;
     }
 
-    findBestMove(board)
+    findBestMove(board, level)
     {
         let bestScore = -1000;
-        let bestMove = new Move();
+        let bestMove = new Move(-1, -1);
+        let moves = [];
 
         for (let i = 0; i < 3; i ++) {
             for (let j = 0; j < 3; j ++) {
                 if (board[i][j] != '_') continue;
                 board[i][j] = this.player;
+                let move = new Move(i, j);
+                moves.push(move);
                 const score = this.search(board, false);
                 if (score > bestScore) {
                     bestMove.row = i;
@@ -131,12 +140,19 @@ class Solver {
                 board[i][j] = '_';
             }
         }
-
+        
+        const rand = Math.random();
+        const thr = thrMap[level];
+        const randMove = moves[Math.floor(Math.random() * moves.length)];
+        // console.log(`${level}, ${rand}, ${thr}`);
+        // console.log(`${JSON.stringify(randMove)} ${JSON.stringify(bestMove)}`);
+        if (rand > thr) bestMove = randMove;
+        
         return bestMove;
     }
 };
 
-function solve(board, player, opponent) {
+function solve(board, player, opponent, level) {
     let solver = new Solver(player, opponent);
     let res = {
         ended: false,
@@ -148,7 +164,7 @@ function solve(board, player, opponent) {
     res.winner = status.winner;
     if (res.ended) return res;
 
-    let bestMove = solver.findBestMove(board);
+    let bestMove = solver.findBestMove(board, level);
     res.board[bestMove.row][bestMove.col] = player;
     status = solver.winner(board);
     res.ended = status.ended;
