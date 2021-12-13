@@ -1,15 +1,7 @@
- 
-// Javascript program to find the
-// next optimal move for a player
-class Move
-{
-
-    constructor()
-
-    {
-
-        let row,col;
-
+class Move{
+    constructor() {
+        this.row = -1;
+        this.col = -1;
     }
 }
  
@@ -20,431 +12,129 @@ class Solver {
         this.opponent = opponent;
     }
 
-    isMovesLeft(board) {
+    isFull(board) {
         for (let i = 0; i < 3; i++)
             for (let j = 0; j < 3; j++)
                 if (board[i][j] == '_')
-                    return true;
+                    return false;
 
-        return false;
+        return true;
     }
     
-    // This is the evaluation function as discussed
-    // in the previous article ( http://goo.gl/sJgv68 )
+    winner(board) {
+        let rows = [[0, 0, 0], [0, 0, 0]]; // x, o
+        let cols = [[0, 0, 0], [0, 0, 0]];
+        let dias = [[0, 0], [0, 0]];
+    
+        let res = {
+            ended: false,
+            winner: ''
+        };
+    
+        let blank = false;
+        for (let i = 0; i < 3; i ++) {
+            for (let j = 0; j < 3; j ++) {
+                if (board[i][j] == '_') {
+                    blank = true;
+                    continue;
+                };
+                const t = board[i][j] == 'x' ? 0 : 1;
+                rows[t][i] ++;
+                cols[t][j] ++;
+                if (i == j) dias[t][0] ++;
+                if (i + j == 2) dias[t][1] ++;
+            }
+        }
+    
+        if (!blank) res.ended = true;
+        for (let t = 0; t < 2; t ++) {
+            let winner = t == 0 ? 'x' : 'o';
+            let won = false;
+            for (let i = 0; i < 3; i ++) {
+                if (rows[t][i] == 3) won = true;
+                if (cols[t][i] == 3) won = true;
+            }
+            if (dias[t][0] == 3 || dias[t][1] == 3) won = true;
+            if (won) {
+                res.ended = true;
+                res.winner = winner;
+                break;
+            }
+        }
+    
+        return res;
+    }
 
-    evaluate(b) {
+    evaluate(board) {
+        const res = this.winner(board);
+        if (!res.ended || res.winner == '') return 0;
+
+        if (res.winner == this.player) return 10;
+        if (this.isFull(board)) return 0;
 
         
 
-        // Checking for Rows for X or O victory.
+        return -10;
+    }
 
-        for(let row = 0; row < 3; row++)
+    search(board, isMax) {
+        const score = this.evaluate(board);
+        if (score == 10 || score == -10) return score;
+        if (this.isFull(board)) return 0;
 
-        {
+        // backtracking
 
-            if (b[row][0] == b[row][1] &&
-
-                b[row][1] == b[row][2])
-
-            {
-
-                if (b[row][0] == this.player)
-
-                    return +10;
-
-                    
-
-                else if (b[row][0] == this.opponent)
-
-                    return -10;
-
+        if (isMax) {
+            let max = -1000;
+            for (let i = 0; i < 3; i ++) {
+                for (let j = 0; j < 3; j ++) {
+                    if (board[i][j] != '_') continue;
+                    board[i][j] = this.player;
+                    max = Math.max(max, this.search(board, false));
+                    board[i][j] = '_';
+                }
             }
-
+            return max;
         }
 
-    
-
-        // Checking for Columns for X or O victory.
-
-        for(let col = 0; col < 3; col++)
-
-        {
-
-            if (b[0][col] == b[1][col] &&
-
-                b[1][col] == b[2][col])
-
-            {
-
-                if (b[0][col] == this.player)
-
-                    return +10;
-
-    
-
-                else if (b[0][col] == this.opponent)
-
-                    return -10;
-
+        if (!isMax) {
+            let min = 1000;
+            for (let i = 0; i < 3; i ++) {
+                for (let j = 0; j < 3; j ++) {
+                    if (board[i][j] != '_') continue;
+                    board[i][j] = this.opponent;
+                    min = Math.min(min, this.search(board, true));
+                    board[i][j] = '_';
+                }
             }
-
+            return min;
         }
-
-    
-
-        // Checking for Diagonals for X or O victory.
-
-        if (b[0][0] == b[1][1] && b[1][1] == b[2][2])
-
-        {
-
-            if (b[0][0] == this.player)
-
-                return +10;
-
-                
-
-            else if (b[0][0] == this.opponent)
-
-                return -10;
-
-        }
-
-    
-
-        if (b[0][2] == b[1][1] && 
-
-            b[1][1] == b[2][0])
-
-        {
-
-            if (b[0][2] == this.player)
-
-                return +10;
-
-                
-
-            else if (b[0][2] == this.opponent)
-
-                return -10;
-
-        }
-
-    
-
-        // Else if none of them have
-
-        // won then return 0
 
         return 0;
     }
-    
-    // This is the minimax function. It 
-    // considers all the possible ways 
-    // the game can go and returns the 
-    // value of the board
-
-    minimax(board, depth, isMax)
-    {
-
-        let score = this.evaluate(board);
-
-    
-
-        // If Maximizer has won the game
-
-        // return his/her evaluated score
-
-        if (score == 10)
-
-            return score;
-
-    
-
-        // If Minimizer has won the game
-
-        // return his/her evaluated score
-
-        if (score == -10)
-
-            return score;
-
-    
-
-        // If there are no more moves and
-
-        // no winner then it is a tie
-
-        if (this.isMovesLeft(board) == false)
-
-            return 0;
-
-    
-
-        // If this maximizer's move
-
-        if (isMax)
-
-        {
-
-            let best = -1000;
-
-    
-
-            // Traverse all cells
-
-            for(let i = 0; i < 3; i++)
-
-            {
-
-                for(let j = 0; j < 3; j++)
-
-                {
-
-                    
-
-                    // Check if cell is empty
-
-                    if (board[i][j]=='_')
-
-                    {
-
-                        
-
-                        // Make the move
-
-                        board[i][j] = this.player;
-
-    
-
-                        // Call minimax recursively 
-
-                        // and choose the maximum value
-
-                        best = Math.max(best, this.minimax(board,
-
-                                        depth + 1, !isMax));
-
-    
-
-                        // Undo the move
-
-                        board[i][j] = '_';
-
-                    }
-
-                }
-
-            }
-
-            return best;
-
-        }
-
-    
-
-        // If this minimizer's move
-
-        else
-
-        {
-
-            let best = 1000;
-
-    
-
-            // Traverse all cells
-
-            for(let i = 0; i < 3; i++)
-
-            {
-
-                for(let j = 0; j < 3; j++)
-
-                {
-
-                    
-
-                    // Check if cell is empty
-
-                    if (board[i][j] == '_')
-
-                    {
-
-                        
-
-                        // Make the move
-
-                        board[i][j] = this.opponent;
-
-    
-
-                        // Call minimax recursively and 
-
-                        // choose the minimum value
-
-                        best = Math.min(best, this.minimax(board,
-
-                                        depth + 1, !isMax));
-
-    
-
-                        // Undo the move
-
-                        board[i][j] = '_';
-
-                    }
-
-                }
-
-            }
-
-            return best;
-
-        }
-    }
-    
-    // This will return the best possible
-    // move for the player
 
     findBestMove(board)
     {
-
-        let bestVal = -1000;
-
+        let bestScore = -1000;
         let bestMove = new Move();
 
-        bestMove.row = -1;
-
-        bestMove.col = -1;
-
-    
-
-        // Traverse all cells, evaluate 
-
-        // minimax function for all empty 
-
-        // cells. And return the cell
-
-        // with optimal value.
-
-        for(let i = 0; i < 3; i++)
-
-        {
-
-            for(let j = 0; j < 3; j++)
-
-            {
-
-                
-
-                // Check if cell is empty
-
-                if (board[i][j] == '_')
-
-                {
-
-                    
-
-                    // Make the move
-
-                    board[i][j] = this.player;
-
-    
-
-                    // compute evaluation function 
-
-                    // for this move.
-
-                    let moveVal = this.minimax(board, 0, false);
-
-    
-
-                    // Undo the move
-
-                    board[i][j] = '_';
-
-    
-
-                    // If the value of the current move 
-
-                    // is more than the best value, then 
-
-                    // update best
-
-                    if (moveVal > bestVal)
-
-                    {
-
-                        bestMove.row = i;
-
-                        bestMove.col = j;
-
-                        bestVal = moveVal;
-
-                    }
-
+        for (let i = 0; i < 3; i ++) {
+            for (let j = 0; j < 3; j ++) {
+                if (board[i][j] != '_') continue;
+                board[i][j] = this.player;
+                const score = this.search(board, false);
+                if (score > bestScore) {
+                    bestMove.row = i;
+                    bestMove.col = j;
+                    bestScore = score;
                 }
-
+                board[i][j] = '_';
             }
-
         }
-
-    
-
-        console.log("The value of the best Move " +
-
-                    "is : ", bestVal + "<br><br>");
-
-    
 
         return bestMove;
     }
 };
-
-function winner(board) {
-    let rows = [[0, 0, 0], [0, 0, 0]]; // x, o
-    let cols = [[0, 0, 0], [0, 0, 0]];
-    let dias = [[0, 0], [0, 0]];
-
-    let res = {
-        ended: false,
-        winner: ''
-    };
-
-    let blank = false;
-    for (let i = 0; i < 3; i ++) {
-        for (let j = 0; j < 3; j ++) {
-            if (board[i][j] == '_') {
-                blank = true;
-                continue;
-            };
-            const t = board[i][j] == 'x' ? 0 : 1;
-            rows[t][i] ++;
-            cols[t][j] ++;
-            if (i == j) dias[t][0] ++;
-            if (i + j == 2) dias[t][1] ++;
-        }
-    }
-
-    if (!blank) res.ended = true;
-    for (let t = 0; t < 2; t ++) {
-        let winner = t == 0 ? 'x' : 'o';
-        let won = false;
-        for (let i = 0; i < 3; i ++) {
-            if (rows[t][i] == 3) won = true;
-            if (cols[t][i] == 3) won = true;
-        }
-        if (dias[t][0] == 3 || dias[t][1] == 3) won = true;
-        if (won) {
-            res.ended = true;
-            res.winner = winner;
-            break;
-        }
-    }
-
-    return res;
-}
 
 function solve(board, player, opponent) {
     let solver = new Solver(player, opponent);
@@ -453,27 +143,17 @@ function solve(board, player, opponent) {
         winner: "",
         board: board
     }
-    let status = winner(board);
+    let status = solver.winner(board);
     res.ended = status.ended;
     res.winner = status.winner;
     if (res.ended) return res;
 
     let bestMove = solver.findBestMove(board);
     res.board[bestMove.row][bestMove.col] = player;
-    status = winner(board);
+    status = solver.winner(board);
     res.ended = status.ended;
     res.winner = status.winner;
     return res;
 }
 
 module.exports = solve;
-
-// let board = [['x', 'x', 'o'], 
-//              ['o', 'x', 'o'], 
-//              ['_', 'x', '_']];
-
-// let player = 'x', opponent = 'o';
-// let res = solve(board, player, opponent);
-// console.log(res);
-// This code is contributed by rag2127
- 
